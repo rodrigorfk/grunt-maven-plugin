@@ -54,7 +54,7 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
         }
 
         File offlineModules = new File(basedir() + File.separator + npmOfflineModulesFilePath + File.separator + npmOfflineModulesFile);
-        File targetPath = new File(gruntBuildDirectory);
+        File targetPath = new File(gruntBuildDirectory, "node_modules");
 
         TarUtil.untar(offlineModules, targetPath, getLog());
     }

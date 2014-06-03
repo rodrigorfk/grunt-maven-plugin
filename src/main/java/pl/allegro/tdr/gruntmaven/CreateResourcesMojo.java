@@ -33,11 +33,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @author Adam Dubiel
  */
 @Mojo(name = "create-resources", defaultPhase = LifecyclePhase.VALIDATE)
-public class CreateResourcesMojo extends BaseMavenGruntMojo {
-
-    private static final String INNER_PROPERTIES_RESOURCE_NAME = "grunt-maven.json";
-
-    private static final int FILTERED_RESOURCES_JSON_LENGTH = 100;
+public class CreateResourcesMojo extends CreateInnerResourceMojo {
 
     /**
      * Resources plugin groupId.
@@ -68,13 +64,6 @@ public class CreateResourcesMojo extends BaseMavenGruntMojo {
     @Parameter(property = "overwriteResources", defaultValue = "true")
     private boolean overwriteResources;
 
-    /**
-     * Name of resources that should be filtered by Maven. When using integrated
-     * workflow, be sure to make Grunt ignore there resources, as it will overwrite
-     * filtered values.
-     */
-    @Parameter(property = "filteredResources")
-    private String[] filteredResources;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -139,42 +128,4 @@ public class CreateResourcesMojo extends BaseMavenGruntMojo {
         return elements;
     }
 
-    private void createInnerPropertiesResource() {
-        Resource.from("/" + INNER_PROPERTIES_RESOURCE_NAME, getLog())
-                .withFilter("filesToWatch", pathToWatchDirectory() + File.separator + "**")
-                .withFilter("directoryToWatch", pathToWatchDirectory())
-                .withFilter("projectRootPath", basedir())
-                .withFilter("targetPath", target())
-                .withFilter("sourceDirectory", sourceDirectory)
-                .withFilter("jsSourceDirectory", jsSourceDirectory)
-                .withFilter("filteredFiles", filteredResourcesAsJSONArray())
-                .copyAndOverwrite(pathToWorkflowTasksDirectory() + INNER_PROPERTIES_RESOURCE_NAME);
-    }
-
-    private String filteredResourcesAsJSONArray() {
-        StringBuilder builder = new StringBuilder(FILTERED_RESOURCES_JSON_LENGTH);
-        builder.append("[");
-
-        builder.append("\"").append("**/").append(npmOfflineModulesFile).append("\"").append(", ");
-        int index;
-        for (index = 0; index < filteredResources.length; ++index) {
-            builder.append("\"").append(filteredResources[index]).append("\"").append(", ");
-        }
-        builder.delete(builder.length() - 2, builder.length());
-
-        builder.append("]");
-        return builder.toString();
-    }
-
-    private String pathToWatchDirectory() {
-        return fullJsSourceDirectory();
-    }
-
-    private String pathToWorkflowTasksDirectory() {
-        return pathToGruntBuildDirectory() + File.separator;
-    }
-
-    private String pathToGruntBuildDirectory() {
-        return gruntBuildDirectory + File.separator;
-    }
 }

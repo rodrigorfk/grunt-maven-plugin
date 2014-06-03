@@ -18,8 +18,10 @@ package pl.allegro.tdr.gruntmaven;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.maven.MavenExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.codehaus.plexus.util.FileUtils;
 import pl.allegro.tdr.gruntmaven.archive.TarUtil;
 import pl.allegro.tdr.gruntmaven.executable.Executable;
 
@@ -32,12 +34,15 @@ import pl.allegro.tdr.gruntmaven.executable.Executable;
 public class ExecNpmOfflineMojo extends ExecNpmMojo {
 
     private static final String NODE_MODULES_DIR_NAME = "node_modules";
+    private static final String PACKAGE_JSON_NAME = "package.json";
+    private static final String GRUNTFILE_NAME = "Gruntfile.js";
 
     private static final String NPM_REBUILD_COMMAND = "rebuild";
 
     @Override
     protected List<Executable> getExecutables() {
         unpackModules();
+        copyPackageGruntFile();
         return Arrays.asList(createNpmInstallExecutable(), createNpmRebuildExecutable());
     }
 
@@ -76,5 +81,18 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
         appendNoColorsArgument(executable);
 
         return executable;
+    }
+
+    private void copyPackageGruntFile() {
+        String packageJsonPath = basedir() + File.separator + relativeJsSourceDirectory() + File.separator + PACKAGE_JSON_NAME;
+        String gruntFilePath = basedir() + File.separator + relativeJsSourceDirectory() + File.separator + GRUNTFILE_NAME;
+        
+        try{
+            File targetPath = new File(gruntBuildDirectory);
+            FileUtils.copyFileToDirectory(new File(packageJsonPath), targetPath);
+            FileUtils.copyFileToDirectory(new File(gruntFilePath), targetPath);
+        }catch(IOException ex){
+            getLog().error(ex);
+        }
     }
 }

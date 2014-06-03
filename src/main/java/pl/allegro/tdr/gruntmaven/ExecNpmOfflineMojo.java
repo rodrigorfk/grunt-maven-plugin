@@ -18,10 +18,10 @@ package pl.allegro.tdr.gruntmaven;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.maven.MavenExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.codehaus.plexus.util.FileUtils;
+import pl.allegro.tdr.gruntmaven.archive.TarGzUtil;
 import pl.allegro.tdr.gruntmaven.archive.TarUtil;
 import pl.allegro.tdr.gruntmaven.executable.Executable;
 
@@ -43,7 +43,7 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
     protected List<Executable> getExecutables() {
         unpackModules();
         copyPackageGruntFile();
-        return Arrays.asList(createNpmInstallExecutable(), createNpmRebuildExecutable());
+        return Arrays.asList(createNpmRebuildExecutable());
     }
 
     private void unpackModules() {
@@ -59,9 +59,16 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
         }
 
         File offlineModules = new File(basedir() + File.separator + npmOfflineModulesFilePath + File.separator + npmOfflineModulesFile);
-        File targetPath = new File(gruntBuildDirectory, "node_modules");
-
-        TarUtil.untar(offlineModules, targetPath, getLog());
+        File targetPath = new File(gruntBuildDirectory);
+        
+        final String tarFileName = offlineModules.getName().toLowerCase();
+        if(tarFileName.endsWith(".tar.gz")){
+            TarGzUtil.untar(offlineModules, targetPath, getLog());
+        }else if(tarFileName.endsWith(".tar")){
+            TarUtil.untar(offlineModules, targetPath, getLog());
+        }else{
+            throw new RuntimeException("invalid extension for offline modules : "+tarFileName);
+        }
     }
 
     private Executable createNpmInstallExecutable() {

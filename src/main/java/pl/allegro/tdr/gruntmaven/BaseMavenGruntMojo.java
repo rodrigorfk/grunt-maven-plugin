@@ -56,7 +56,7 @@ public abstract class BaseMavenGruntMojo extends AbstractMojo {
     /**
      * Name of packed node_modules TAR file, defaults to node_modules.tar.
      */
-    @Parameter(property = "npmOfflineModulesFile", defaultValue = "node_modules.tar")
+    @Parameter(property = "npmOfflineModulesFile", defaultValue = "node_modules.tar.gz")
     protected String npmOfflineModulesFile;
 
     /**

@@ -51,6 +51,7 @@ public class CreateInnerResourceMojo extends BaseMavenGruntMojo{
                 .withFilter("targetPath", target())
                 .withFilter("sourceDirectory", sourceDirectory)
                 .withFilter("jsSourceDirectory", jsSourceDirectory)
+                .withFilter("nodeConfigPath", nodeConfigPath)
                 .withFilter("filteredFiles", filteredResourcesAsJSONArray())
                 .copyAndOverwrite(pathToWorkflowTasksDirectory() + INNER_PROPERTIES_RESOURCE_NAME);
     }

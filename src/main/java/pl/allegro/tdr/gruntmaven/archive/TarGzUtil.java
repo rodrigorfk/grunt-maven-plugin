@@ -65,10 +65,4 @@ public final class TarGzUtil {
         }
     }
     
-    public static void main(String[] args) {
-        TarGzUtil.untar(new File("/Users/rodrigokuntzer/Desenvolvimento/TNT/workspace/ems/ems-frontend/src/main/webapp/node_modules.tar.gz"), 
-                new File("/Users/rodrigokuntzer/Desenvolvimento/TNT/workspace/ems/ems-frontend/target-grunt/node_modules"), 
-                new SystemStreamLog());
-    }
-    
 }

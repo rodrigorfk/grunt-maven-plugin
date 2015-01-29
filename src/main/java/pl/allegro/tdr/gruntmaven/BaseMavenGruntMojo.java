@@ -65,6 +65,9 @@ public abstract class BaseMavenGruntMojo extends AbstractMojo {
      */
     @Parameter(property = "npmOfflineModulesFilePath", defaultValue = "")
     protected String npmOfflineModulesFilePath;
+    
+    @Parameter(property = "nodeConfigPath", defaultValue = "src/main/nodejs")
+    protected String nodeConfigPath;
 
     @Parameter(property = "project", readonly = true, required = true)
     private MavenProject mavenProject;

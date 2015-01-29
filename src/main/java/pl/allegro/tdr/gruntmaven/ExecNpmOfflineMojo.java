@@ -17,6 +17,7 @@ package pl.allegro.tdr.gruntmaven;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -41,31 +42,38 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
 
     @Override
     protected List<Executable> getExecutables() {
-        unpackModules();
+        boolean unpackModules = unpackModules();
         copyPackageGruntFile();
-        return Arrays.asList(createNpmRebuildExecutable());
+        if(unpackModules){
+            return Arrays.asList(createNpmRebuildExecutable());
+        }
+        return Collections.EMPTY_LIST;
     }
 
-    private void unpackModules() {
+    private boolean unpackModules() {
         String nodeModulesPath = gruntBuildDirectory + File.separator + NODE_MODULES_DIR_NAME;
         File targetModulesPath = new File(nodeModulesPath);
         if (targetModulesPath.exists()) {
             getLog().info("Found existing node_modules at " + nodeModulesPath + " , not going to overwrite them.");
-            return;
+            return false;
         }
 
         if (npmOfflineModulesFilePath == null) {
-            npmOfflineModulesFilePath = relativeJsSourceDirectory();
+            npmOfflineModulesFilePath = basedir() + File.separator + relativeJsSourceDirectory();
         }
 
-        File offlineModules = new File(basedir() + File.separator + npmOfflineModulesFilePath + File.separator + npmOfflineModulesFile);
+        File offlineModules = new File(npmOfflineModulesFilePath + File.separator + npmOfflineModulesFile);
         File targetPath = new File(gruntBuildDirectory);
+        
+        getLog().info("Node modules required, now proceeding to offline unpack the file "+offlineModules.getAbsolutePath());
         
         final String tarFileName = offlineModules.getName().toLowerCase();
         if(tarFileName.endsWith(".tar.gz")){
             TarGzUtil.untar(offlineModules, targetPath, getLog());
+            return true;
         }else if(tarFileName.endsWith(".tar")){
             TarUtil.untar(offlineModules, targetPath, getLog());
+            return true;
         }else{
             throw new RuntimeException("invalid extension for offline modules : "+tarFileName);
         }
@@ -91,13 +99,19 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
     }
 
     private void copyPackageGruntFile() {
-        String packageJsonPath = basedir() + File.separator + relativeJsSourceDirectory() + File.separator + PACKAGE_JSON_NAME;
-        String gruntFilePath = basedir() + File.separator + relativeJsSourceDirectory() + File.separator + GRUNTFILE_NAME;
+        String packageJsonPath = basedir() + File.separator + nodeConfigPath + File.separator + PACKAGE_JSON_NAME;
+        String gruntFilePath = basedir() + File.separator + nodeConfigPath + File.separator + GRUNTFILE_NAME;
         
         try{
             File targetPath = new File(gruntBuildDirectory);
-            FileUtils.copyFileToDirectory(new File(packageJsonPath), targetPath);
-            FileUtils.copyFileToDirectory(new File(gruntFilePath), targetPath);
+            final File packgeJsonFile = new File(packageJsonPath);
+            if(packgeJsonFile.exists()){
+                FileUtils.copyFileToDirectory(packgeJsonFile, targetPath);
+            }
+            final File gruntFileFile = new File(gruntFilePath);
+            if(gruntFileFile.exists()){
+                FileUtils.copyFileToDirectory(gruntFileFile, targetPath);
+            }
         }catch(IOException ex){
             getLog().error(ex);
         }

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.FileUtils;
 import pl.allegro.tdr.gruntmaven.archive.TarGzUtil;
 import pl.allegro.tdr.gruntmaven.archive.TarUtil;
@@ -39,12 +40,15 @@ public class ExecNpmOfflineMojo extends ExecNpmMojo {
     private static final String GRUNTFILE_NAME = "Gruntfile.js";
 
     private static final String NPM_REBUILD_COMMAND = "rebuild";
+    
+    @Parameter(property = "npmRebuild", defaultValue = "true")
+    protected boolean npmRebuild = true;
 
     @Override
     protected List<Executable> getExecutables() {
         boolean unpackModules = unpackModules();
         copyPackageGruntFile();
-        if(unpackModules){
+        if(unpackModules && npmRebuild){
             return Arrays.asList(createNpmRebuildExecutable());
         }
         return Collections.EMPTY_LIST;
